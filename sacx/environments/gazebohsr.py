@@ -53,8 +53,8 @@ class GazeboHsr(FiniteActionEnvironment, TaskEnvironment):
     BACKWARD = GazeboHsrAction(5)
     OPEN = GazeboHsrAction(12)
     CLOSE = GazeboHsrAction(13)
-    ACTIONS = [UP, DOWN, FORWARD, BACKWARD, OPEN, CLOSE]
-    # ACTIONS = [UP, DOWN, RIGHT, LEFT, FORWARD, BACKWARD, OPEN, CLOSE]
+    # ACTIONS = [UP, DOWN, FORWARD, BACKWARD, OPEN, CLOSE]
+    ACTIONS = [UP, DOWN, RIGHT, LEFT, FORWARD, BACKWARD, OPEN, CLOSE]
 
     def __init__(self, render=True):
         """
@@ -62,7 +62,7 @@ class GazeboHsr(FiniteActionEnvironment, TaskEnvironment):
         :param render: A boolean indicating whether the environment should be rendered
         """
         super(GazeboHsr, self).__init__()
-        self.env = gym.make('gazebo-hsr-assembly-v0')
+        self.env = gym.make('gazebo-hsr-assembly-v1')
         self.render = render
 
         self.terminal = False
@@ -88,20 +88,20 @@ class GazeboHsr(FiniteActionEnvironment, TaskEnvironment):
         return math.sqrt(math.pow(v1.x - v2.x, 2) + math.pow(v1.y - v2.y, 2) + math.pow(v1.z - v2.z, 2))
 
     def reach_reward(self):
-        box_green_position = self.env.get_model_pose('box_green').position
-        hand_position = self.env.get_hand_position()
+        box_green_position = self.env.unwrapped.get_model_pose('box_green').position
+        hand_position = self.env.unwrapped.get_hand_position()
         dist = GazeboHsr.norm2(box_green_position, hand_position)
         return 1 - dist if dist < 1 else 0
 
     def move_reward(self, prev_box_green_position):
-        box_green_position = self.env.get_model_pose('box_green').position
+        box_green_position = self.env.unwrapped.get_model_pose('box_green').position
         # We only care about horizontal move
         box_green_position.z = prev_box_green_position.z
         dist = GazeboHsr.norm2(prev_box_green_position, box_green_position)
         return 10 * dist
 
     def lift_reward(self):
-        box_green_position = self.env.get_model_pose('box_green').position
+        box_green_position = self.env.unwrapped.get_model_pose('box_green').position
         return box_green_position.z - 0.565 if box_green_position.z > 0.565 else 0
 
     def step(self, action):
@@ -114,7 +114,7 @@ class GazeboHsr(FiniteActionEnvironment, TaskEnvironment):
             raise Exception('Cannot perform action on terminal state!')
         if self.render:
             self.env.render()
-        prev_box_green_position = self.env.get_model_pose('box_green').position
+        prev_box_green_position = self.env.unwrapped.get_model_pose('box_green').position
         obs, reward, self.terminal, info = self.env.step(action.value)
         self.step_v += 1
         rewards = {
@@ -123,7 +123,6 @@ class GazeboHsr(FiniteActionEnvironment, TaskEnvironment):
             MOVE: self.move_reward(prev_box_green_position),
             LIFT: self.lift_reward()
         }
-        print(reward)
 
         return GazeboHsrState(obs, self.terminal), rewards
 

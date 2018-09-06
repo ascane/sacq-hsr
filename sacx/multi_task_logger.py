@@ -25,7 +25,7 @@ class PlottingMultiTaskLogger(MultiTaskLogger):
         self.xs = []
         self.plots = dict()
 
-        f, (self.plt1 ,self.plt2) = plt.subplots(1, 2)
+        f, (self.plt1, self.plt2) = plt.subplots(1, 2)
 
         for task, color in zip(tasks, colors):
             self.scores[task] = []

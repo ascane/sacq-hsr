@@ -10,7 +10,7 @@ if __name__ == '__main__':
     from sacx.tasked_p_network import PolicyNetwork
     from sacx.sacq import SACQ
 
-    env = GazeboHsr()
+    env = GazeboHsr(render=False)
 
     print(isinstance(env, core.FiniteActionEnvironment))
     tasks = env.get_tasks()
